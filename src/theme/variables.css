@@ -74,6 +74,63 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-light-contrast-rgb: 0, 0, 0;
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;
+
+  /* orange */
+  --ion-color-orange: radial-gradient(86.75% 11018.97% at 8.81% 50%, #FF6B00 0%, #003249 85.24%);
+  --ion-color-orange-rgb: 253, 106, 0;
+  --ion-color-orange-contrast: #ffffff;
+  --ion-color-orange-contrast-rgb: 255, 255, 255;
+  --ion-color-orange-shade: #df5d00;
+  --ion-color-orange-tint: #fd791a;
+
+  /* white */
+  --ion-color-white: #ffffff;
+  --ion-color-white-rgb: 255, 255, 255;
+  --ion-color-white-contrast: #000000;
+  --ion-color-white-contrast-rgb: 0, 0, 0;
+  --ion-color-white-shade: #e0e0e0;
+  --ion-color-white-tint: #ffffff;
+
+  /* gray */
+  --ion-color-gray: #E4E2E1;
+  --ion-color-gray-rgb: 228, 226, 225;
+  --ion-color-gray-contrast: #000000;
+  --ion-color-gray-contrast-rgb: 0, 0, 0;
+  --ion-color-gray-shade: #c9c7c6;
+  --ion-color-gray-tint: #e7e5e4;
+  /* silver1 */
+  --ion-color-silver1: #D9D9D9;
+  --ion-color-silver1-rgb: 217, 217, 217;
+  --ion-color-silver1-contrast: #000000;
+  --ion-color-silver1-contrast-rgb: 0, 0, 0;
+  --ion-color-silver1-shade: #bfbfbf;
+  --ion-color-silver1-tint: #dddddd;
+  /* dark */
+  --ion-color-dark-a: #000000;
+	--ion-color-dark-a-rgb: 0,0,0;
+	--ion-color-dark-a-contrast: #ffffff;
+	--ion-color-dark-a-contrast-rgb: 255,255,255;
+	--ion-color-dark-a-shade: #000000;
+	--ion-color-dark-a-tint: #1a1a1a;
+
+  /* Azul oscuro */
+  --ion-color-blueblack: #003249;
+	--ion-color-blueblack-rgb: 0,50,73;
+	--ion-color-blueblack-contrast: #ffffff;
+	--ion-color-blueblack-contrast-rgb: 200, 200, 200;
+	--ion-color-blueblack-shade: #002c40;
+	--ion-color-blueblack-tint: #1a475b;
+
+  /* azul oscuro con blanco */
+  --ion-color-bluedark: radial-gradient(86.75% 11018.97% at 8.81% 50%, #003249 0%, #009788 85.24%);
+	--ion-color-bluedark-rgb: 0,51,74;
+	--ion-color-bluedark-contrast: #ffffff;
+	--ion-color-bluedark-contrast-rgb: 255,255,255;
+	--ion-color-bluedark-shade: radial-gradient(86.75% 11018.97% at 8.81% 50%, #003249 0%, #009788 85.24%);
+	--ion-color-bluedark-tint: #1a475c;
+
+  
+
 }
 
 @media (prefers-color-scheme: dark) {
@@ -239,4 +296,121 @@ html {
   /* For more information on dynamic font scaling, visit the documentation: 
   https://ionicframework.com/docs/layout/dynamic-font-scaling */
   --ion-dynamic-font: var(--ion-default-dynamic-font);
+}
+
+.ion-color-orange {
+  --ion-color-base: var(--ion-color-orange);
+  --ion-color-base-rgb: var(--ion-color-orange-rgb);
+  --ion-color-contrast: var(--ion-color-orange-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-orange-contrast-rgb);
+  --ion-color-shade: var(--ion-color-orange-shade);
+  --ion-color-tint: var(--ion-color-orange-tint);
+}
+
+.ion-color-white {
+  --ion-color-base: var(--ion-color-white);
+  --ion-color-base-rgb: var(--ion-color-white-rgb);
+  --ion-color-contrast: var(--ion-color-white-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-white-contrast-rgb);
+  --ion-color-shade: var(--ion-color-white-shade);
+  --ion-color-tint: var(--ion-color-white-tint);
+}
+
+.ion-color-gray {
+  --ion-color-base: var(--ion-color-gray);
+  --ion-color-base-rgb: var(--ion-color-gray-rgb);
+  --ion-color-contrast: var(--ion-color-gray-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-gray-contrast-rgb);
+  --ion-color-shade: var(--ion-color-gray-shade);
+  --ion-color-tint: var(--ion-color-gray-tint);
+}
+
+.ion-color-silver1 {
+  --ion-color-base: var(--ion-color-silver1);
+  --ion-color-base-rgb: var(--ion-color-silver1-rgb);
+  --ion-color-contrast: var(--ion-color-silver1-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-silver1-contrast-rgb);
+  --ion-color-shade: var(--ion-color-silver1-shade);
+  --ion-color-tint: var(--ion-color-silver1-tint);
+}
+.ion-color-dark-a {
+  --ion-color-base: var(--ion-color-dark-a);
+  --ion-color-base-rgb: var(--ion-color-dark-a-rgb);
+  --ion-color-contrast: var(--ion-color-dark-a-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-dark-a-contrast-rgb);
+  --ion-color-shade: var(--ion-color-dark-a-shade);
+  --ion-color-tint: var(--ion-color-dark-a-tint);
+}
+.ion-color-blueblack {
+	--ion-color-base: var(--ion-color-blueblack);
+	--ion-color-base-rgb: var(--ion-color-blueblack-rgb);
+	--ion-color-contrast: var(--ion-color-blueblack-contrast);
+	--ion-color-contrast-rgb: var(--ion-color-blueblack-contrast-rgb);
+	--ion-color-shade: var(--ion-color-blueblack-shade);
+	--ion-color-tint: var(--ion-color-blueblack-tint);
+}
+
+.ion-color-bluedark {
+	--ion-color-base: var(--ion-color-bluedark);
+	--ion-color-base-rgb: var(--ion-color-bluedark-rgb);
+	--ion-color-contrast: var(--ion-color-bluedark-contrast);
+	--ion-color-contrast-rgb: var(--ion-color-bluedark-contrast-rgb);
+	--ion-color-shade: var(--ion-color-bluedark-shade);
+	--ion-color-tint: var(--ion-color-bluedark-tint);
+}
+
+
+
+/* Estilo del ion-textarea */
+ion-textarea.custom {
+    --background: #D9D9D9;
+    --color: #003249;
+    --border-color: #cccccc;
+    --border-radius: 8px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Estilo del ion-textarea cuando está enfocado */
+ion-textarea.custom:focus {
+    --border-color: #336699;
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilo de la etiqueta del ion-textarea */
+ion-textarea.custom::part(label) {
+    color: #999999;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Estilo del texto dentro del ion-textarea */
+ion-textarea.custom::part(textarea) {
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Estilo del borde inferior del ion-textarea */
+ion-textarea.custom::part(textarea)::part(input) {
+    border-bottom-width: 2px;
+    border-bottom-style: solid;
+}
+
+/* Estilo del placeholder del ion-textarea */
+ion-textarea.custom::part(textarea)::part(input)::placeholder {
+    color: #999999;
+}
+
+/* Estilo del ion-text */
+ion-textarea.custom .helper-text, 
+ion-textarea.custom .counter {
+    color: #003249;
+    font-size: 16px;
+    font-weight: bold;
 }
