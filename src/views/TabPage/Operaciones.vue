@@ -1,3 +1,48 @@
+<script setup lang="ts">
+import {
+  IonPage,
+  IonList,
+  IonAccordion,
+  IonItem,
+  IonLabel,
+  IonContent,
+  IonAccordionGroup,
+  IonItemGroup,
+  IonItemDivider,
+  IonIcon,
+} from '@ionic/vue';
+import { idCardOutline, personSharp, logOut, settingsSharp } from 'ionicons/icons';
+import Header from '@/common/Header.vue';
+import { showToast } from '@/helpers/showToast';
+import { Device } from '@capacitor/device';
+import { onMounted, ref } from 'vue';
+import { App } from '@capacitor/app';
+
+const deviceInfo = ref({} as any);
+const deviceInfo2 = ref({} as any);
+
+const getDeviceInfo = async () => {
+  const info = await Device.getInfo();
+  deviceInfo2.value = info;
+};
+
+const obtenerVersion = async () => {
+  const info = await App.getInfo();
+  deviceInfo.value = info;
+};
+
+const cerrarSesion = () => {
+  obtenerVersion();
+  showToast('Cerrando sesión...', 'danger');
+};
+
+onMounted(() => {
+  getDeviceInfo();
+  obtenerVersion();
+});
+
+</script>
+
 <template>
   <ion-page>
     <Header titulo="Operaciones" color="bluedark" />
@@ -46,7 +91,7 @@
               <div class="header_divider">
               <ion-label class="cuenta_header" > Ajustes </ion-label>
               <ion-item class="id_item_header" lines="none">
-                <ion-label class="id_header"> Versión 123456789 </ion-label>
+                <ion-label class="id_header"> Versión {{ deviceInfo.version }} </ion-label>
               </ion-item>
             </div>
             </ion-item>
@@ -60,32 +105,12 @@
           <ion-label>Cerrar Sesión</ion-label>
         </ion-item>
       </ion-list>
+      <p>{{ deviceInfo }}</p>
+      <p>{{ deviceInfo2 }}</p>
     </ion-content>
   </ion-page>
 </template>
 
-<script setup lang="ts">
-import {
-  IonPage,
-  IonList,
-  IonAccordion,
-  IonItem,
-  IonLabel,
-  IonContent,
-  IonAccordionGroup,
-  IonItemGroup,
-  IonItemDivider,
-  IonIcon,
-} from '@ionic/vue';
-import { idCardOutline, personSharp, logOut, settingsSharp } from 'ionicons/icons';
-import Header from '@/common/Header.vue';
-import { showToast } from '@/helpers/showToast';
-
-const cerrarSesion = () => {
-  showToast('Cerrando sesión...', 'danger');
-};
-
-</script>
 
 <style scoped>
 ion-list{
