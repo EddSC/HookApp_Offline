@@ -35,3 +35,38 @@ export interface TaskDetail {
     num_ord: number
     estado?: 'pending' | 'processed'
 };
+
+export interface Nota {
+    idRecomen: number
+    idComentarios: number
+    item: number
+    recomendacion: string
+    comentario: string
+    varNota: number
+    varFoto: number
+    varMant: number
+    tecnico: number
+    varTitulo: number
+};
+
+export interface Cotizacion {
+    IdItems: number
+    TipoCotizacion: number
+    NotaEscrita: string
+    Status: number
+    Foto: number
+    Audio: number
+    idMant: number
+    idUser: number
+    titulo: number
+    idOffline: string
+}
+
+export interface PrioridadCondicion {
+    VarItem: number
+    VarPrio: number
+    VarStatus: number
+    Tecnico: number
+    VarMant: number
+    VarTitulo: number
+};

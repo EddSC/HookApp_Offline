@@ -19,14 +19,14 @@ import {
 import { heart, caretForwardOutline } from 'ionicons/icons';
 import HeaderBack from '@/common/HeaderBack.vue';
 import { useAuthStore } from '@/stores/authStore';
-import { onMounted, provide, ref } from 'vue';
-import type { InjectionKey } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { Task } from '@/interfaces/mantenimientoInterface';
 import { presentLoading, dismissLoading } from '@/helpers/loading';
 import { showToast } from '@/helpers/showToast';
 import { getTituloPreventivo } from '@/services/__mocks__/preventivo/tituloList';
 import { usePreventivoStore } from '@/stores/mPreventivoStore';
+import { insertData, deleteData, updateData, getDataCondicion, getDataItems } from '@/services/__mocks__/sqlite/database';
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -44,18 +44,11 @@ const getItem = (orden: number, titulo:string) => {
     router.push(id+'/'+orden)
 }
 
-const question: InjectionKey<string> = Symbol('question');
-provide('question', '¿Desea eliminar el registro?');
-
 const getTitulo = async () => {
     try {
-        await presentLoading('Cargando...');
         const res = await getTituloPreventivo(id, Number(authStore.authId));
         if (res) {
-            preventivoTitulo.value = res;
-            preventivoTitulo.value.sort((a, b) => a.orden - b.orden);
-            generateTitulos()
-            return
+            return res.sort((a:any, b:any) => a.orden - b.orden);
         } else {
             await showToast('No se encontraron datos', 'danger');
             return [];
@@ -63,6 +56,99 @@ const getTitulo = async () => {
     } catch (error) {
         await showToast('Ocurrió un error al obtener el mantenimiento preventivo', 'danger');
         return [];
+    } finally {
+        console.log('Finalizado');
+    }
+}
+
+const syncTask = async () => {
+    try {
+            await presentLoading('Cargando Tareas...');
+
+            const apiData  = await getTitulo();
+            const dbData  = await getDataCondicion('task', 'IdMant = ?', String(id));
+
+            const dataToInsert = apiData.filter((apiItem:any) => !dbData.some((dbItem:any) => dbItem.orden === apiItem.orden));
+            const dataToDelete = dbData.filter((dbItem:any) => !apiData.some((apiItem:any) => apiItem.orden === dbItem.orden));
+            const dataToUpdate = apiData.filter((apiItem:any) =>
+                dbData.some(
+                    (dbItem:any) =>
+                        dbItem.orden === apiItem.orden &&
+                        JSON.stringify(dbItem) !== JSON.stringify(apiItem)
+                )
+            );
+            
+            // Insertar datos que no existen en la base de datos
+            if (dataToInsert.length > 0) {
+                await insertData('task', dataToInsert);
+            }
+
+            // Eliminar datos que no están en la respuesta de la API
+            if (dataToDelete.length > 0) {
+                const idsToDelete = dataToDelete.map((item:any) => item.orden);
+                for (const id of idsToDelete) {
+                    await deleteData('task', 'orden = ?', [id]);
+                }
+            }
+
+            // Actualizar datos que han cambiado
+            if (dataToUpdate.length > 0) {
+                for (const updatedItem of dataToUpdate) {
+                    await updateData('task', updatedItem, 'orden = ?', [updatedItem.orden]);
+                }
+            }
+
+        const datos =  await getDataCondicion('task', 'IdMant = ?', String(id));
+        preventivoTitulo.value = datos;
+        generateTitulos()
+        await syncTaskDetails(datos);
+    } catch (error) {
+        console.error('Error al sincronizar:', error);
+    } finally {
+        await dismissLoading();
+    }
+}
+
+const syncTaskDetails = async (data:any[]) => {
+    try {
+        await presentLoading('Cargando Items...');
+        for(const tarea of data){
+            
+            const apiData  = await preventivoStore.getItems(tarea.IdMant, tarea.orden);
+            const dbData  = await getDataItems('taskdetail', 'IdMantenimiento = ? AND IdTitulo = ?', tarea.IdMant, tarea.orden);
+            
+            const dataToInsert = apiData.filter((apiItem:any) => !dbData.some((dbItem:any) => dbItem.num_ord === apiItem.num_ord));
+            const dataToDelete = dbData.filter((dbItem:any) => !apiData.some((apiItem:any) => apiItem.num_ord === dbItem.num_ord));
+            const dataToUpdate = apiData.filter((apiItem:any) =>
+                dbData.some(
+                    (dbItem:any) =>
+                        dbItem.num_ord === apiItem.num_ord &&
+                        JSON.stringify(dbItem) !== JSON.stringify(apiItem)
+                )
+            );
+            
+            // Insertar datos que no existen en la base de datos
+            if (dataToInsert.length > 0) {
+                await insertData('taskdetail', dataToInsert);
+            }
+
+            // Eliminar datos que no están en la respuesta de la API
+            if (dataToDelete.length > 0) {
+                const idsToDelete = dataToDelete.map((item:any) => item.num_ord);
+                for (const id of idsToDelete) {
+                    await deleteData('taskdetail', 'num_ord = ?', [id]);
+                }
+            }
+
+            // Actualizar datos que han cambiado
+            if (dataToUpdate.length > 0) {
+                for (const updatedItem of dataToUpdate) {
+                    await updateData('taskdetail', updatedItem, 'num_ord = ?', [updatedItem.num_ord]);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error al sincronizar:', error);
     } finally {
         await dismissLoading();
     }
@@ -84,12 +170,12 @@ const ionInfinite = async(ev: InfiniteScrollCustomEvent) => {
 }
 
 const handleRefresh = async(event: CustomEvent) => {
-    await getTitulo();
+    await syncTask();
     event.detail.complete();
 }
 
 onMounted(() => {
-    getTitulo()
+    syncTask()
 });
 
 </script>
@@ -123,7 +209,6 @@ onMounted(() => {
 
 <style scoped>
 ion-list {
-    /* background-color: aliceblue; */
     padding: 0;
 }
 

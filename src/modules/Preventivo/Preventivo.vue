@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
     IonContent,
+    IonPage,
     useIonRouter,
     IonCard,
     IonFab,
@@ -24,9 +25,12 @@ import { onMounted, ref } from 'vue';
 import { usePreventivoStore } from '@/stores/mPreventivoStore';
 import { Preferences } from '@capacitor/preferences';
 import { Upkeep } from '@/interfaces/mantenimientoInterface';
+import { getData, insertData, deleteData, updateData } from '@/services/__mocks__/sqlite/database'
 
 
 const mPreventivos = ref([] as Upkeep[]);
+const items = ref<any>();
+const id = ref(0);
 
 const router = useIonRouter();
 const preventivoStore = usePreventivoStore();
@@ -48,18 +52,20 @@ const checkAuth = async () => {
     const data = await Preferences.get({ key: 'auth' });
     if (data.value) {
         const authData = JSON.parse(data.value)
-        await preventivoStore.getPreventivo(Number(authData.idtuser));
-        generateMantenimientoPreventivo()
+        id.value = Number(authData.idtuser)
+        const res = await preventivoStore.getPreventivo(Number(authData.idtuser));
+        return res;
+        // generateMantenimientoPreventivo()
     }
 }
 
 const generateMantenimientoPreventivo = () => {
     const count = mPreventivos.value.length;
     for (let p = 0; p < 6; p++) {
-        if (preventivoStore.preventivoData[count + p] === undefined) {
+        if (items.value[count + p] === undefined) {
             break;
         }
-        mPreventivos.value.push(preventivoStore.preventivoData[count + p])
+        mPreventivos.value.push(items.value[count + p])
     }
 }
 
@@ -73,13 +79,61 @@ const handleRefresh = async(event: CustomEvent) => {
     event.detail.complete();
 }
 
-onMounted(() => {
-    checkAuth();
+const synchronizeData = async () => {
+    try {
+        const apiData  = await checkAuth();
+        const dbData  = await getData('mantenimiento');
+
+         // Identificar datos a insertar, eliminar y actualizar
+        const dataToInsert = apiData.filter((apiItem:any) => !dbData.some((dbItem:any) => dbItem.idMantenimiento === apiItem.idMantenimiento));
+        const dataToDelete = dbData.filter((dbItem:any) => !apiData.some((apiItem:any) => apiItem.idMantenimiento === dbItem.idMantenimiento));
+        const dataToUpdate = apiData.filter((apiItem:any) =>
+            dbData.some(
+                (dbItem:any) =>
+                    dbItem.idMantenimiento === apiItem.idMantenimiento &&
+                    JSON.stringify(dbItem) !== JSON.stringify(apiItem)
+            )
+        );
+
+        // Insertar datos que no existen en la base de datos
+        if (dataToInsert.length > 0) {
+            await insertData('mantenimiento', dataToInsert);
+        }
+
+         // Eliminar datos que no están en la respuesta de la API
+         if (dataToDelete.length > 0) {
+            const idsToDelete = dataToDelete.map((item:any) => item.idMantenimiento);
+            for (const id of idsToDelete) {
+                await deleteData('mantenimiento', 'idMantenimiento = ?', [id]);
+            }
+        }
+
+        // Actualizar datos que han cambiado
+        if (dataToUpdate.length > 0) {
+            for (const updatedItem of dataToUpdate) {
+                await updateData('mantenimiento', updatedItem, 'idMantenimiento = ?', [updatedItem.idMantenimiento]);
+            }
+        }
+        
+        const data = await getData('mantenimiento');
+        items.value = data.sort((a:any, b:any) => a.idMantenimiento - b.idMantenimiento);
+        generateMantenimientoPreventivo();
+        // await syncTask(data)
+    } catch (error) {
+        console.error('Error al sincronizar:', error);
+    } finally {
+        console.log('Sincronización exitosa');
+    }
+}
+
+onMounted( async() => {
+    await synchronizeData();
 });
 
 </script>
 
 <template>
+<ion-page>
     <Header color="orange" titulo="Mantenimiento Preventivo" />
     <ion-content :fullscreen="true" color="white">
         <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
@@ -88,7 +142,7 @@ onMounted(() => {
         <ion-card color="gray" v-for="mantenimiento in mPreventivos" :key="mantenimiento.idMantenimiento">
             <ion-fab vertical="top" horizontal="end">
                 <ion-fab-button size="small" translucent:true mode="ios">
-                    <ion-icon src="src/assets/icon/IconMantenimiento.svg"></ion-icon>
+                    <ion-icon src="/assets/icon/IconMantenimiento.svg"></ion-icon>
                 </ion-fab-button>
             </ion-fab>
 
@@ -115,12 +169,12 @@ onMounted(() => {
             <ion-infinite-scroll-content></ion-infinite-scroll-content>
         </ion-infinite-scroll>
     </ion-content>
+</ion-page>
 </template>
 
 <style scoped>
 ion-icon {
     color: rgb(0, 0, 0);
-    /* background: white; */
 }
 
 ion-fab-button {

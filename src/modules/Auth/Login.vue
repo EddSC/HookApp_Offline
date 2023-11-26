@@ -46,7 +46,7 @@ const signIn = async () => {
 
 <template>
     <ion-card>
-        <ion-img src="src/assets/images/Konecranes.png"></ion-img>
+        <ion-img src="/assets/images/Konecranes.png"></ion-img>
         <ion-card-header>
             <ion-card-title>Iniciar Sesión</ion-card-title>
         </ion-card-header>

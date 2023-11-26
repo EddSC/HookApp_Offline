@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
+import { JeepSqlite } from 'jeep-sqlite/dist/components/jeep-sqlite';
 import router from './router';
 
 import { IonicVue } from '@ionic/vue';
@@ -24,12 +25,15 @@ import '@ionic/vue/css/display.css';
 /* Theme variables */
 import './theme/variables.css';
 
+customElements.define('jeep-sqlite', JeepSqlite);
+console.log(`after customElements.define`);
+
 const pinia = createPinia()
 const app = createApp(App)
   .use(pinia)
   .use(IonicVue)
   .use(router);
-  
+
 router.isReady().then(() => {
   app.mount('#app');
 });

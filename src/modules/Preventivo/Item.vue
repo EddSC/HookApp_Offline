@@ -13,17 +13,19 @@ import {
     IonRefresher,
     IonRefresherContent,
     IonInfiniteScroll,
-    IonInfiniteScrollContent 
+    IonInfiniteScrollContent ,
+    modalController
 } from '@ionic/vue';
-import { heart, caretForwardOutline } from 'ionicons/icons';
+import { caretForwardOutline } from 'ionicons/icons';
 import HeaderBack from '@/common/HeaderBack.vue';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { TaskDetail } from '@/interfaces/mantenimientoInterface';
 import { presentLoading, dismissLoading } from '@/helpers/loading';
 import { showToast } from '@/helpers/showToast';
-import { getItem } from '@/services/__mocks__/preventivo/itemList';
 import { usePreventivoStore } from '@/stores/mPreventivoStore';
+import { getDataItems } from '@/services/__mocks__/sqlite/database';
+import FormularioNormal from '@/modules/Preventivo/FormularioNormal.vue';
 
 const route = useRoute();
 const preventivoStore = usePreventivoStore();
@@ -38,9 +40,10 @@ const mItems= ref([] as TaskDetail[]);
 const getItems = async () => {
     try {
         await presentLoading('Cargando...');
-        const res = await getItem(id, orden);
+        const res  = await getDataItems('taskdetail', 'IdMantenimiento = ? AND IdTitulo = ?', String(id), String(orden));
         if (res) {
             preventivoItems.value = res;
+            console.table(preventivoItems.value);
             generateItems()
             return
         } else {
@@ -75,6 +78,18 @@ const handleRefresh = async(event: CustomEvent) => {
     event.detail.complete();
 }
 
+const openModalForm = async (taskDetail: TaskDetail) => {
+    const modal = await modalController.create({
+        component: FormularioNormal,
+        componentProps: {
+            taskDetail: taskDetail,
+            id: id,
+            titulo: preventivoStore.preventivoTitulo
+        }
+    });
+    return modal.present();
+}
+
 onMounted(() => {
     getItems()
 });
@@ -90,14 +105,17 @@ onMounted(() => {
         <ion-list>
             <ion-item-sliding v-for="item in mItems" :key="item.id_item">
 
-                <ion-item :class="[item.Condicion === 'nocolor' ? 'param_no' : 'param_si']" button :detail="true" :detailIcon="caretForwardOutline">
+                <ion-item @click="openModalForm(item)" :class="[item.Condicion === 'nocolor' ? 'param_no' : 'param_si']" button :detail="true" :detailIcon="caretForwardOutline">
                     <ion-note slot="start"><b>{{ item.num_ord }} |</b></ion-note>
                     <ion-label class="ion-text-wrap custom-label">{{ item.Item }}</ion-label>
                 </ion-item>
             
                 <ion-item-options side="end" class="custom-item-options">
+                    <ion-item-option color="danger" class="custom-item-option">
+                        NO APLICA
+                    </ion-item-option>
                     <ion-item-option class="custom-item-option">
-                        <ion-icon class="custom-icon" slot="icon-only" :icon="heart"></ion-icon>
+                        P=0 C=0
                     </ion-item-option>
                 </ion-item-options>
             </ion-item-sliding>
@@ -111,7 +129,6 @@ onMounted(() => {
 
 <style scoped>
 ion-list {
-    /* background-color: aliceblue; */
     padding: 0;
 }
 

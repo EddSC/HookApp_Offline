@@ -1,5 +1,5 @@
 <template>
-    <ion-segment-button button :disabled="estado">
+    <ion-segment-button button :disabled="estado" :value="value" >
         <ion-label> <b> {{ name }} </b> </ion-label>
     </ion-segment-button>
 </template>
@@ -14,6 +14,10 @@ defineProps({
     },
     estado: {
         type: Boolean,
+        required: false
+    },
+    value: {
+        type: String,
         required: false
     }
 })
