@@ -7,6 +7,7 @@
             <ion-title>{{ titulo }}</ion-title>
             <ion-label slot="end"> Mant. {{ id }}</ion-label>
         </ion-toolbar>
+        <slot></slot>
     </ion-header>
 </template>
 

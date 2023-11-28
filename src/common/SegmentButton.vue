@@ -1,6 +1,7 @@
 <template>
     <ion-segment-button button :disabled="estado" :value="value" >
-        <ion-label> <b> {{ name }} </b> </ion-label>
+        <slot></slot>
+        <ion-label>  {{ name }}  </ion-label>
     </ion-segment-button>
 </template>
 
@@ -26,23 +27,20 @@ defineProps({
 
 <style scoped>
 ion-segment-button {
-    --indicator-color: #08a391;
     background-color: #01415fdc;
-    color: #ffffff;
 }
 
 /* Material Design styles */
 ion-segment-button.md {
-    --color: #000;
+    --color: #ffffff;
     --color-checked: #08a391;
-    --indicator-height: 4px;
+    --indicator-height: 7px;
 }
 
 /* iOS styles */
 ion-segment-button.ios {
     --color: #08a391;
     --color-checked: #fff;
-    --border-radius: 20px;
 }
 
 

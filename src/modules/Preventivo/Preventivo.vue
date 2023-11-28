@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
     IonContent,
-    IonPage,
     useIonRouter,
     IonCard,
     IonFab,
@@ -25,8 +24,10 @@ import { onMounted, ref } from 'vue';
 import { usePreventivoStore } from '@/stores/mPreventivoStore';
 import { Preferences } from '@capacitor/preferences';
 import { Upkeep } from '@/interfaces/mantenimientoInterface';
-import { getData, insertData, deleteData, updateData } from '@/services/__mocks__/sqlite/database'
+import { useStorage } from '@/services/__mocks__/sqlite/storage';
 
+
+const { insertarElemento, obtenerElemento } = useStorage();
 
 const mPreventivos = ref([] as Upkeep[]);
 const items = ref<any>();
@@ -44,6 +45,10 @@ const tareasPreventivos = (id: string) => {
     router.push('tab1/' + id);
 }
 
+const fotosDatosGrua = (idmant: string) => {
+    router.push('tab1/datos-grua/' + idmant + '/' + id.value);
+}
+
 const informeAnterior = (id: string) => {
     console.log('informe anterior', id);
 }
@@ -55,7 +60,6 @@ const checkAuth = async () => {
         id.value = Number(authData.idtuser)
         const res = await preventivoStore.getPreventivo(Number(authData.idtuser));
         return res;
-        // generateMantenimientoPreventivo()
     }
 }
 
@@ -74,73 +78,50 @@ const ionInfinite = async (ev: InfiniteScrollCustomEvent) => {
     await ev.target.complete();
 };
 
-const handleRefresh = async(event: CustomEvent) => {
+const handleRefresh = async (event: CustomEvent) => {
     await checkAuth();
     event.detail.complete();
 }
 
 const synchronizeData = async () => {
     try {
-        const apiData  = await checkAuth();
-        const dbData  = await getData('mantenimiento');
-
-         // Identificar datos a insertar, eliminar y actualizar
-        const dataToInsert = apiData.filter((apiItem:any) => !dbData.some((dbItem:any) => dbItem.idMantenimiento === apiItem.idMantenimiento));
-        const dataToDelete = dbData.filter((dbItem:any) => !apiData.some((apiItem:any) => apiItem.idMantenimiento === dbItem.idMantenimiento));
-        const dataToUpdate = apiData.filter((apiItem:any) =>
-            dbData.some(
-                (dbItem:any) =>
-                    dbItem.idMantenimiento === apiItem.idMantenimiento &&
-                    JSON.stringify(dbItem) !== JSON.stringify(apiItem)
-            )
-        );
-
-        // Insertar datos que no existen en la base de datos
-        if (dataToInsert.length > 0) {
-            await insertData('mantenimiento', dataToInsert);
-        }
-
-         // Eliminar datos que no están en la respuesta de la API
-         if (dataToDelete.length > 0) {
-            const idsToDelete = dataToDelete.map((item:any) => item.idMantenimiento);
-            for (const id of idsToDelete) {
-                await deleteData('mantenimiento', 'idMantenimiento = ?', [id]);
-            }
+        const apiData = await checkAuth();
+        const dbData = await obtenerElemento('mPreventivo', String(id.value));
+        if(!apiData){
+            const data = await await obtenerElemento('mPreventivo', String(id.value));
+            items.value = data.sort((a: any, b: any) => a.idMantenimiento - b.idMantenimiento);
+            generateMantenimientoPreventivo();
+            return
         }
 
         // Actualizar datos que han cambiado
-        if (dataToUpdate.length > 0) {
-            for (const updatedItem of dataToUpdate) {
-                await updateData('mantenimiento', updatedItem, 'idMantenimiento = ?', [updatedItem.idMantenimiento]);
-            }
+        if (JSON.stringify(apiData) !== JSON.stringify(dbData)) {
+            await insertarElemento('mPreventivo', String(id.value), apiData);
         }
-        
-        const data = await getData('mantenimiento');
-        items.value = data.sort((a:any, b:any) => a.idMantenimiento - b.idMantenimiento);
+
+        const data = await await obtenerElemento('mPreventivo', String(id.value));
+        items.value = data.sort((a: any, b: any) => a.idMantenimiento - b.idMantenimiento);
         generateMantenimientoPreventivo();
         // await syncTask(data)
     } catch (error) {
-        console.error('Error al sincronizar:', error);
-    } finally {
-        console.log('Sincronización exitosa');
+        alert('Error al sincronizar:' + error);
     }
 }
 
-onMounted( async() => {
+onMounted(async () => {
     await synchronizeData();
 });
 
 </script>
 
 <template>
-<ion-page>
     <Header color="orange" titulo="Mantenimiento Preventivo" />
     <ion-content :fullscreen="true" color="white">
         <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
             <ion-refresher-content></ion-refresher-content>
         </ion-refresher>
         <ion-card color="gray" v-for="mantenimiento in mPreventivos" :key="mantenimiento.idMantenimiento">
-            <ion-fab vertical="top" horizontal="end">
+            <ion-fab vertical="top" horizontal="end" @click="fotosDatosGrua(mantenimiento.idMantenimiento)">
                 <ion-fab-button size="small" translucent:true mode="ios">
                     <ion-icon src="/assets/icon/IconMantenimiento.svg"></ion-icon>
                 </ion-fab-button>
@@ -169,7 +150,6 @@ onMounted( async() => {
             <ion-infinite-scroll-content></ion-infinite-scroll-content>
         </ion-infinite-scroll>
     </ion-content>
-</ion-page>
 </template>
 
 <style scoped>

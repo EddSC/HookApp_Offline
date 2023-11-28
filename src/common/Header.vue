@@ -3,6 +3,7 @@
         <ion-toolbar :color="color">
             <ion-title>{{ titulo }}</ion-title>
         </ion-toolbar>
+        <slot></slot>
     </ion-header>
 </template>
 
