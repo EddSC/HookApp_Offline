@@ -1,11 +1,11 @@
 <template>
     <ion-page>
-        <Preventivo />
+        <FotosDatosGrua />
     </ion-page>
 </template>
 
 <script setup lang="ts">
 import { IonPage } from '@ionic/vue';
-import Preventivo from '@/modules/Preventivo/Preventivo.vue';
+import FotosDatosGrua from '@/modules/Preventivo/FotosDatosGrua.vue';
 
 </script>

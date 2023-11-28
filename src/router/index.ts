@@ -44,6 +44,13 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: 'tab1/datos-grua/:id/:user',
+        component: () => import('@/views/Preventivo/FotosDatosGrua.vue'),
+        meta: {
+          requiresAuth: true
+        }
+      },
+      {
         path: 'tab2',
         component: () => import('@/views/TabPage/Correctivo.vue'),
         meta: {

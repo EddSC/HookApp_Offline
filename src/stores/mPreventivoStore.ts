@@ -11,6 +11,7 @@ export const usePreventivoStore = defineStore('preventivoStore', () => {
     const preventivoData = ref([] as Upkeep[]);
     // const preventivoTitulo = ref([] as Task[]);
     const preventivoTitulo = ref('' as string);
+    const nameStorage = ref('gruas' as string);
 
     const setPreventivo = (data: Upkeep[]) => {
         preventivoData.value = data
@@ -22,13 +23,10 @@ export const usePreventivoStore = defineStore('preventivoStore', () => {
             const res = await getMantenimientoPreventivo(id);
             if (res) {
                 return res;
-            } else {
-                await showToast('No se encontraron datos', 'danger');
-                return [];
             }
         } catch (error) {
             await showToast('Ocurrió un error al obtener el mantenimiento preventivo', 'danger');
-            return [];
+            return;
         } finally {
             await dismissLoading();
         }
@@ -40,9 +38,6 @@ export const usePreventivoStore = defineStore('preventivoStore', () => {
             const res = await getTituloPreventivo(id, idUser);
             if (res) {
                 return res;
-            } else {
-                await showToast('No se encontraron datos', 'danger');
-                return [];
             }
         } catch (error) {
             await showToast('Ocurrió un error al obtener el Titulo', 'danger');
@@ -57,9 +52,6 @@ export const usePreventivoStore = defineStore('preventivoStore', () => {
             const res = await getItem(id, orden);
             if (res) {
                 return res;
-            } else {
-                await showToast('No se encontraron datos', 'danger');
-                return [];
             }
         } catch (error) {
             await showToast('Ocurrió un error al obtener el Item', 'danger');
@@ -78,6 +70,7 @@ export const usePreventivoStore = defineStore('preventivoStore', () => {
         getPreventivo,
         getTitulo,
         tituloItem,
-        getItems
+        getItems,
+        nameStorage
     }
 })

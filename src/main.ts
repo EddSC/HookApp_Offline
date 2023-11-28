@@ -26,7 +26,6 @@ import '@ionic/vue/css/display.css';
 import './theme/variables.css';
 
 customElements.define('jeep-sqlite', JeepSqlite);
-console.log(`after customElements.define`);
 
 const pinia = createPinia()
 const app = createApp(App)
