@@ -33,6 +33,11 @@ import {
 import SegmentButton from '@/common/SegmentButton.vue';
 import { Nota, Cotizacion, PrioridadCondicion } from '@/interfaces/mantenimientoInterface';
 import { computed, ref } from 'vue';
+import ButtonSubmit from '@/common/ButtonSubmit.vue';
+import TakePhoto from '@/common/takePhoto.vue';
+import Camera from '@/common/Camera.vue';
+import { close, trash, warning } from 'ionicons/icons';
+import { usePhotoGallery, UserPhoto } from '@/services/__mocks__/multimedia/photoGallery';
 
 
 const props = defineProps({
@@ -49,9 +54,11 @@ const props = defineProps({
         required: true,
     },
 })
+
+const { photos, takePhoto, deletePhoto, pickPhoto, base64Convert } = usePhotoGallery();
 const selectedSegment = ref('1');
 const cerrar = () => {
-    return modalController.dismiss(null, 'cerrar');
+    return modalController.dismiss('ok');
 }
 const segmentChanged = (ev: CustomEvent) => {
     selectedSegment.value = ev.detail.value;
@@ -87,8 +94,42 @@ const nota = ref({} as Nota);
 const cotizacion = ref({} as Cotizacion);
 const prioridadCondicion = ref({} as PrioridadCondicion);
 
-const submitFrmNota = () => {
-    console.log('submitFrmNota');
+const caracteresObs = computed(() => {
+    return nota.value.comentario !== undefined ? 225 - nota.value.comentario.length : 225;
+})
+const caracteresRec = computed(() => {
+    return nota.value.recomendacion !== undefined ? 225 - nota.value.recomendacion.length : 225;
+})
+const caracteresCoti = computed(() => {
+    return cotizacion.value.NotaEscrita !== undefined ? 250 - cotizacion.value.NotaEscrita.length : 250;
+})
+
+const showActionSheet = async (photo: UserPhoto) => {
+    const actionSheet = await actionSheetController.create({
+        header: "Photos",
+        buttons: [
+            {
+                text: "Delete",
+                role: "destructive",
+                icon: trash,
+                handler: () => {
+                    deletePhoto(photo);
+                },
+            },
+            {
+                text: "Cancel",
+                icon: close,
+                role: "cancel",
+                handler: () => {
+                    // Nothing to do, action sheet is automatically closed
+                },
+            },
+        ],
+    });
+    await actionSheet.present();
+};
+const submitFrmNota = async() => {
+    console.log('submitFrmNota', prioridadCondicion.value.VarStatus);
 }
 const submitFrmCotizacion = () => {
     console.log('submitFrmCotizacion');
@@ -141,27 +182,36 @@ const customFormatter = (inputLength:number, maxLength:number) => {
                     <ion-label><b>NOTA</b></ion-label>
                 </ion-item>
                 <ion-item lines="none">
-                    <ion-textarea :disabled="prioridadCondicion.VarStatus <= 3" :maxlength="225" autocapitalize="on"
+                    <ion-textarea :disabled="prioridadCondicion.VarStatus === undefined" :maxlength="225" autocapitalize="on"
                         inputmode="text" :rows="7" v-model.trim="nota.comentario" label-placement="floating"
                         placeholder="Ingrese Observaciones..." :counter="true" :counter-formatter="customFormatter">
-                        <div slot="label">Observaciones <ion-text color="danger">(required)</ion-text></div>
+                        <div slot="label">Observaciones <ion-text :color="caracteresObs <= 175 ? 'danger' : 'primary'">{{ caracteresObs }}</ion-text></div>
                     </ion-textarea>
                 </ion-item>
                 
                 <ion-item lines="none">
-                    <ion-textarea :disabled="prioridadCondicion.VarStatus <= 3" :maxlength="225" autocapitalize="on"
+                    <ion-textarea :disabled="prioridadCondicion.VarStatus === undefined" :maxlength="225" autocapitalize="on"
                         inputmode="text" mode="ios" :rows="7" v-model.trim="nota.recomendacion"
                         label-placement="floating" placeholder="Ingrese Recomendaciones..." :counter="true"
                         :counter-formatter="customFormatter">
-                        <div slot="label">Recomendaciones <ion-text color="danger">(required)</ion-text></div>
+                        <div slot="label">Recomendaciones <ion-text :color="caracteresRec <= 175 ? 'danger' : 'primary'">{{caracteresRec}}</ion-text></div>
                     </ion-textarea>
                 </ion-item>
 
-                <ion-button expand="block" fill="clear" type="submit">
-                    <b>Registrar</b>
-                </ion-button>
+                <ButtonSubmit name="Registrar"/>
             </ion-list>
         </form>
+        <!-- HookCamara -->
+        <ion-text color="primary">
+            <h1 class="text-center">GALERIA DE IMAGENES</h1>
+        </ion-text>
+        <ion-grid>
+            <ion-row>
+                <ion-col size="4" v-for="photo in photos" :key="photo.filepath">
+                    <ion-img :src="photo.webviewPath" @click="showActionSheet(photo)"></ion-img>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
     </ion-content>
      <!-- Fin formulario NOTA -->
     <!-- Inicio de Formulario Cotización -->
@@ -184,33 +234,60 @@ const customFormatter = (inputLength:number, maxLength:number) => {
                     <ion-label> <b>Cotización Escrita</b></ion-label>
                 </ion-item>
                 <ion-item>
-                    <ion-textarea :disabled="cotizacion.TipoCotizacion === 0" :maxlength="250" autocapitalize="on"
+                    <ion-textarea :disabled="cotizacion.TipoCotizacion === undefined" :maxlength="250" autocapitalize="on"
                         inputmode="text" mode="ios" :rows="8" placeholder="Ingrese nota de cotización..."
                         v-model.trim="cotizacion.NotaEscrita"
                         label-placement="floating"
                         :counter="true"
                         :counter-formatter="customFormatter"
                     >
-                    <div slot="label">Cotización Escrita <ion-text color="danger">(required)</ion-text></div>
+                    <div slot="label">Cotización Escrita <ion-text :color="caracteresCoti <= 175 ? 'danger' : 'primary'">{{ caracteresCoti }}</ion-text></div>
                     </ion-textarea>
                 </ion-item>
-                <ion-button expand="block" fill="clear" type="submit">
-                    <b>Registrar Cotización</b>
-                </ion-button>
+                <ButtonSubmit name="Registrar Cotización"/>
             </ion-list>
         </form>
         <!-- HookCamara -->
+        <ion-text color="primary">
+            <h1 class="text-center">GALERIA DE IMAGENES</h1>
+        </ion-text>
+        <ion-grid>
+            <ion-row>
+                <ion-col size="4" v-for="photo in photos" :key="photo.filepath">
+                    <ion-img :src="photo.webviewPath" @click="showActionSheet(photo)"></ion-img>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
     </ion-content>
+    <ion-text class="advertencia" color="warning"><ion-icon :icon="warning" ></ion-icon>
+            <span class="mensage">Se procederá a registrar todas las imágenes disponibles.</span>
+    </ion-text>
+
+
+    <!-- Fin formulario Cotización -->
+    <!-- Inicio Camara -->
+    <TakePhoto @click="pickPhoto"/>
+    <Camera @click="takePhoto"/>
 </template>
 
 
 <style scoped>
-ion-button {
-    --background: #ff4d00;
-    --color: white;
-    --border-radius: 10px;
+.advertencia {
+    /* centrar */
+    text-align: center;
 }
-
+.text-center{
+    /* centrar */
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #FF4D00;
+}
+ion-grid {
+    margin-top: 1rem;
+    background-color: #09405a7c;
+    border-radius: 10px;
+}
 ion-item {
     --background: #E4E2E1;
     --color: black;
@@ -224,19 +301,9 @@ ion-item {
     color: red;
 }
 
-/* .image-upload{
-    margin-top: 30rem;
-} */
-#takePhoto {
-    --background: #AC44CF;
-}
 
 .fondoFormulario {
     background: #E4E2E1;
-}
-
-.image-upload {
-    margin-bottom: 4rem;
 }
 
 .btnStart {

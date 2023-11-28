@@ -18,9 +18,9 @@ import {
 } from '@ionic/vue';
 import { caretForwardOutline } from 'ionicons/icons';
 import HeaderBack from '@/common/HeaderBack.vue';
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { TaskDetail, PrioridadCondicion, TaskDetails } from '@/interfaces/mantenimientoInterface';
+import { TaskDetail, PrioridadCondicion, TaskDetails, NoAplica } from '@/interfaces/mantenimientoInterface';
 import { presentLoading, dismissLoading } from '@/helpers/loading';
 import { showToast } from '@/helpers/showToast';
 import { usePreventivoStore } from '@/stores/mPreventivoStore';
@@ -39,10 +39,9 @@ const preventivoStore = usePreventivoStore();
 const id = Number(route.params.id);
 const orden = Number(route.params.idOden);
 const authStore = useAuthStore();
-const preventivoItems = ref([] as TaskDetail[]);
-const mItems = ref([] as TaskDetail[]);
 const prioridadCondicion = ref({} as PrioridadCondicion);
 const setPrioridadCondicion = ref({} as TaskDetails);
+const noAplica = ref({} as NoAplica);
 const selectedSegment = ref('PENDIENTE');
 
 const segmentChanged = (ev: CustomEvent) => {
@@ -52,33 +51,26 @@ const segmentChanged = (ev: CustomEvent) => {
 const getItems = async () => {
     try {
         await presentLoading('Cargando...');
-        const res = await await obtenerElemento('pItem', `${String(id)}${String(orden)}${String(authStore.authId)}`);
+        preventivoStore.resetItems();
+        const res:TaskDetail[] = await obtenerElemento('pItem', `${String(id)}${String(orden)}${String(authStore.authId)}`);
         if (res) {
-            preventivoItems.value = res;
-            generateItems()
+            console.log(res);
+            preventivoStore.setItems(res);
+            preventivoStore.generateItems()
             return
         } else {
             await showToast('No se encontraron datos', 'danger');
         }
     } catch (error) {
-        await showToast('Ocurrió un error al obtener el mantenimiento preventivo', 'danger');
+        await showToast('Ocurrió un error al obtener el Items', 'danger');
     } finally {
         await dismissLoading();
     }
 }
 
-const generateItems = () => {
-    const count = mItems.value.length;
-    for (let p = 0; p < 21; p++) {
-        if (preventivoItems.value[count + p] === undefined) {
-            break;
-        }
-        mItems.value.push(preventivoItems.value[count + p])
-    }
-}
 
 const ionInfinite = async (ev: InfiniteScrollCustomEvent) => {
-    generateItems();
+    preventivoStore.generateItems();
     await ev.target.complete();
 }
 
@@ -96,16 +88,16 @@ const openModalForm = async (taskDetail: TaskDetail) => {
             titulo: preventivoStore.preventivoTitulo
         }
     });
+    //traes datos del modal
+    modal.onDidDismiss().then((data) => {
+        if (data.data === 'ok') {
+            getItems();
+        }
+    });
+
     return modal.present();
 }
 
-const itemPendiente = computed(() => {
-    return mItems.value.filter(item => item.Condicion === 'nocolor');
-});
-
-const itemCompletado = computed(() => {
-    return mItems.value.filter(item => item.Condicion !== 'nocolor');
-});
 
 // registro de prioridad y condicion en storage
 const regPrioridadCondicion = (IdTitulo: number, id_item: number, num_ord: number) => {
@@ -128,34 +120,63 @@ const regPrioridadCondicion = (IdTitulo: number, id_item: number, num_ord: numbe
 }
 
 const cambiarPrioridadCondicion = async (id_item: number) => {
-    preventivoItems.value = preventivoItems.value.map(t => t.id_item === id_item ? { ...t, estado: 'processed' } : t)
-    mItems.value = mItems.value.map(t => t.id_item === id_item ? { ...t, estado: 'processed' } : t)
-    await insertarElemento('pItem', `${String(id)}${String(orden)}${String(authStore.authId)}`, preventivoItems.value);
+    const res = preventivoStore.procesarEstadoItem(id_item);
+    await insertarElemento('pItem', `${String(id)}${String(orden)}${String(authStore.authId)}`, res);
 }
 
-const submitPrioridadCondicion = async (IdTitulo: number, id_item: number, num_ord: number) => {
+
+// registro de no aplica en storage
+const regNoAplica = (IdTitulo: number, id_item: number, num_ord: number) => {
+    noAplica.value.VarItem = id_item;
+    noAplica.value.VarTitulo = IdTitulo;
+    noAplica.value.VarMant = Number(route.params.id);
+
+    const id = genUniqueId();
+    setPrioridadCondicion.value.id = id;
+    setPrioridadCondicion.value.idTaskDetail = id;
+    setPrioridadCondicion.value.idMantenimiento = Number(route.params.id);
+    setPrioridadCondicion.value.idTitulo = IdTitulo;
+    setPrioridadCondicion.value.idOrden = num_ord;
+    setPrioridadCondicion.value.idItem = id_item;
+    setPrioridadCondicion.value.fechaHora = new Date().toLocaleString();
+    setPrioridadCondicion.value.noAplica = noAplica.value;
+}
+
+
+const submitAccion = async (
+    IdTitulo: number,
+    id_item: number,
+    num_ord: number,
+    accion: 'prioridadCondicion' | 'noAplica'
+) => {
     try {
-        const vereficar = preventivoItems.value.find(item => item.id_item === id_item);
-        if (vereficar?.estado === 'processed') {
+        await presentLoading('Registrando...');
+        const verificar = preventivoStore.preventivoItems.find(item => item.id_item === id_item);
+        if (verificar?.estado === 'processed') {
             return showToast('Este item ya fue procesado', 'danger');
         }
-        await presentLoading('Registrando...');
-        regPrioridadCondicion(IdTitulo, id_item, num_ord);
+
+        if (accion === 'prioridadCondicion') {
+            regPrioridadCondicion(IdTitulo, id_item, num_ord);
+        } else if (accion === 'noAplica') {
+            regNoAplica(IdTitulo, id_item, num_ord);
+        }
+
         await insertarElemento(preventivoStore.nameStorage, setPrioridadCondicion.value.id, setPrioridadCondicion.value);
         await cambiarPrioridadCondicion(id_item);
         await showToast('Prioridad y condición registrada correctamente', 'success');
+        console.log(setPrioridadCondicion.value);
     } catch (error) {
-        await showToast('Ocurrió un error al registrar la prioridad y condición', 'danger');
+        const errorMessage = accion === 'prioridadCondicion' ?
+            'Ocurrió un error al registrar la prioridad y condición' :
+            'Ocurrió un error al registrar no Aplica';
+        await showToast(errorMessage, 'danger');
     } finally {
         prioridadCondicion.value = {} as PrioridadCondicion;
         setPrioridadCondicion.value = {} as TaskDetails;
+        noAplica.value = {} as NoAplica;
         await dismissLoading();
     }
-}
-
-const submitNoAplica = () => {
-    console.log('No aplica', setPrioridadCondicion.value);
-    console.log('No aplica', prioridadCondicion.value);
 }
 
 
@@ -177,7 +198,7 @@ onMounted(() => {
             <ion-refresher-content></ion-refresher-content>
         </ion-refresher>
         <ion-list v-if="selectedSegment === 'PENDIENTE'">
-            <ion-item-sliding v-for="item in itemPendiente" :key="item.id_item">
+            <ion-item-sliding v-for="item in preventivoStore.itemPendiente" :key="item.id_item">
 
                 <ion-item @click="openModalForm(item)" :class="[item.estado === 'processed' ? 'param_si' : 'param_no']"
                     button :detail="true" :detailIcon="caretForwardOutline">
@@ -186,20 +207,21 @@ onMounted(() => {
                 </ion-item>
 
                 <ion-item-options side="end" class="custom-item-options">
-                    <ion-item-option color="danger" class="custom-item-option" @click="submitNoAplica">
+                    <ion-item-option color="danger" class="custom-item-option"
+                        @click="submitAccion(item.IdTitulo, item.id_item, item.num_ord, 'noAplica')">
                         NO APLICA
                     </ion-item-option>
                     <ion-item-option class="custom-item-option"
-                        @click="submitPrioridadCondicion(item.IdTitulo, item.id_item, item.num_ord)">
+                        @click="submitAccion(item.IdTitulo, item.id_item, item.num_ord, 'prioridadCondicion')">
                         P=0 C=0
                     </ion-item-option>
                 </ion-item-options>
             </ion-item-sliding>
-            <AlertMensage mensage="No tienes Items pendientes" v-if="itemPendiente.length === 0" />
+            <AlertMensage mensage="No tienes Items pendientes" v-if="preventivoStore.itemPendiente.length === 0" />
         </ion-list>
 
         <ion-list v-if="selectedSegment === 'COMPLETADO'">
-            <ion-item-sliding v-for="item in itemCompletado" :key="item.id_item">
+            <ion-item-sliding v-for="item in preventivoStore.itemCompletado" :key="item.id_item">
 
                 <ion-item @click="openModalForm(item)" :class="[item.Condicion === 'nocolor' ? 'param_no' : 'param_si']"
                     button :detail="true" :detailIcon="caretForwardOutline">
@@ -216,7 +238,7 @@ onMounted(() => {
                     </ion-item-option>
                 </ion-item-options>
             </ion-item-sliding>
-            <AlertMensage mensage="No has completado ningún ítem todavía." v-if="itemCompletado.length === 0" />
+            <AlertMensage mensage="No has completado ningún ítem todavía." v-if="preventivoStore.itemCompletado.length === 0" />
         </ion-list>
         <ion-infinite-scroll @ionInfinite="ionInfinite">
             <ion-infinite-scroll-content></ion-infinite-scroll-content>
