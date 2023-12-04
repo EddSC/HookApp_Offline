@@ -119,7 +119,8 @@ const limpiarPhotos = () => {
 }
 
 const enviarImage = async () => {
-    await presentLoading('Registrando Foto...');
+    try {
+        await presentLoading('Registrando Foto...');
     if (photos.value.length === 0) {
         return showToast('No existe Foto ', 'danger');
     }
@@ -133,7 +134,11 @@ const enviarImage = async () => {
     
     limpiarPhotos();
     await showToast('Foto registrado correctamente', 'success')
-    await dismissLoading();
+    } catch (error) {
+        await showToast('Error al registrar Foto', 'danger')
+    }finally{
+        await dismissLoading();
+    }
 }
 
 </script>

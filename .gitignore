@@ -31,6 +31,7 @@ npm-debug.log*
 /plugins
 /www
 android/
-.env
+.env.development
+.env.production
 
 resources/android/**/*

@@ -25,9 +25,10 @@ import { usePreventivoStore } from '@/stores/mPreventivoStore';
 import { Preferences } from '@capacitor/preferences';
 import { Upkeep } from '@/interfaces/mantenimientoInterface';
 import { useStorage } from '@/services/__mocks__/sqlite/storage';
+import { showToast } from '@/helpers/showToast';
+import { presentLoading, dismissLoading } from '@/helpers/loading';
 
-
-const { insertarElemento, obtenerElemento } = useStorage();
+const { insertarDatos, obtenerElemento } = useStorage();
 
 const mPreventivos = ref([] as Upkeep[]);
 const items = ref<any>();
@@ -38,7 +39,12 @@ const preventivoStore = usePreventivoStore();
 
 
 const informePreventivo = (id: string) => {
-    router.push('tab1/' + id);
+    router.push('tab1/informe/' + id);
+}
+
+const informeAnterior = async(id: string, serie?: string) => {
+    if (!serie) return await showToast('No se pudo obtener la serie', 'danger');
+    router.push('tab1/informe-pendiente/' + id + '/' + serie);
 }
 
 const tareasPreventivos = (id: string) => {
@@ -49,9 +55,6 @@ const fotosDatosGrua = (idmant: string) => {
     router.push('tab1/datos-grua/' + idmant + '/' + id.value);
 }
 
-const informeAnterior = (id: string) => {
-    console.log('informe anterior', id);
-}
 
 const checkAuth = async () => {
     const data = await Preferences.get({ key: 'auth' });
@@ -65,7 +68,7 @@ const checkAuth = async () => {
 
 const generateMantenimientoPreventivo = () => {
     const count = mPreventivos.value.length;
-    for (let p = 0; p < 6; p++) {
+    for (let p = 0; p < 15; p++) {
         if (items.value[count + p] === undefined) {
             break;
         }
@@ -79,16 +82,17 @@ const ionInfinite = async (ev: InfiniteScrollCustomEvent) => {
 };
 
 const handleRefresh = async (event: CustomEvent) => {
-    await checkAuth();
+    await synchronizeData();
     event.detail.complete();
 }
 
 const synchronizeData = async () => {
     try {
+        await presentLoading('Sincronizando datos...');
         const apiData = await checkAuth();
         const dbData = await obtenerElemento('mPreventivo', String(id.value));
         if(!apiData){
-            const data = await await obtenerElemento('mPreventivo', String(id.value));
+            const data = await obtenerElemento('mPreventivo', String(id.value));
             items.value = data.sort((a: any, b: any) => a.idMantenimiento - b.idMantenimiento);
             generateMantenimientoPreventivo();
             return
@@ -96,15 +100,17 @@ const synchronizeData = async () => {
 
         // Actualizar datos que han cambiado
         if (JSON.stringify(apiData) !== JSON.stringify(dbData)) {
-            await insertarElemento('mPreventivo', String(id.value), apiData);
+            await insertarDatos('mPreventivo', String(id.value), apiData);
         }
 
-        const data = await await obtenerElemento('mPreventivo', String(id.value));
+        const data = await obtenerElemento('mPreventivo', String(id.value));
         items.value = data.sort((a: any, b: any) => a.idMantenimiento - b.idMantenimiento);
         generateMantenimientoPreventivo();
         // await syncTask(data)
     } catch (error) {
         alert('Error al sincronizar:' + error);
+    }finally{
+        await dismissLoading();
     }
 }
 
@@ -137,7 +143,7 @@ onMounted(async () => {
                         <ion-segment>
                             <SegmentButton name="INFORME" @click="informePreventivo(mantenimiento.idMantenimiento)">
                             </SegmentButton>
-                            <SegmentButton name="OBS. PENDIENTES" @click="informeAnterior(mantenimiento.idMantenimiento)">
+                            <SegmentButton name="OBS. PENDIENTES" @click="informeAnterior(mantenimiento.idMantenimiento, mantenimiento.serie)">
                             </SegmentButton>
                             <SegmentButton name="INFORME" estado @click="informePreventivo(mantenimiento.idMantenimiento)">
                             </SegmentButton>

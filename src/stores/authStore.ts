@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { LoginInterface } from '@/interfaces/loginInterface';
 import { authenticate } from '@/services/__mocks__/auth/authenticate';
 import { showToast } from '@/helpers/showToast';
-import { presentLoading, dismissLoading } from '@/helpers/loading';
 import { Preferences } from '@capacitor/preferences';
 import { computed, ref } from 'vue';
 
@@ -22,6 +21,7 @@ export const useAuthStore = defineStore('authStore', () => {
     const authCorreo = computed(() => authData.value.tcorreo);
     const authNombres = computed(() => authData.value.tnombres);
     const authId = computed(() => authData.value.idtuser);
+    const authStatus = computed(() => authData.value.Status);
     const isAuthenticated = computed(() => {
         return !!authData.value.idtuser
     });
@@ -38,16 +38,13 @@ export const useAuthStore = defineStore('authStore', () => {
             return
         }
         //llamada al servicio
-        await presentLoading('Iniciando sesión...')
         const res = await authenticate(dataLogin)
         if (res) {
             await setAuth(res)
-            await dismissLoading()
             await showToast(`Bienvenido ${res.tnombres.toUpperCase()}`, 'success')
             authData.value = res
             return res
         } else {
-            await dismissLoading()
             await showToast('Credenciales incorrectas', 'danger')
         }
     }
@@ -73,6 +70,7 @@ export const useAuthStore = defineStore('authStore', () => {
         signIn,
         signOut,
         checkAuth,
+        authStatus,
         authData,
         authCorreo,
         authNombres,

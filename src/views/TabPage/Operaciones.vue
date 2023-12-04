@@ -1,157 +1,64 @@
 <script setup lang="ts">
 import {
   IonPage,
-  IonList,
-  IonAccordion,
-  IonItem,
-  IonLabel,
   IonContent,
-  IonAccordionGroup,
-  IonItemGroup,
-  IonItemDivider,
-  IonIcon,
+  IonRefresher,
+  IonRefresherContent,
 } from '@ionic/vue';
-import { idCardOutline, personSharp, logOut, settingsSharp } from 'ionicons/icons';
 import Header from '@/common/Header.vue';
+import InformationUsuario from '@/modules/Operaciones/InformacionUsuario.vue';
+import ListaPersonal from '@/modules/Operaciones/ListaPersonal.vue';
+import Ajustes from '@/modules/Operaciones/Ajustes.vue';
+import CerrarSesion from '@/modules/Operaciones/CerrarSesion.vue';
+import Sincronizar from '@/modules/Operaciones/Sincronizar.vue';
+import { useStorage } from '@/services/__mocks__/sqlite/storage';
+import { usePreventivoStore } from '@/stores/mPreventivoStore';
 import { showToast } from '@/helpers/showToast';
-import { Device } from '@capacitor/device';
-import { onMounted, ref } from 'vue';
-import { App } from '@capacitor/app';
+import { presentLoading, dismissLoading } from '@/helpers/loading';
+import { useSynchronize } from '@/stores/synchronize';
 
-const deviceInfo = ref({} as any);
-const deviceInfo2 = ref({} as any);
+const syncronized = useSynchronize();
+const { obtenerActividades } = useStorage();
+const preventivoStore = usePreventivoStore();
 
-const getDeviceInfo = async () => {
-  const info = await Device.getInfo();
-  deviceInfo2.value = info;
-};
 
-const obtenerVersion = async () => {
-  const info = await App.getInfo();
-  deviceInfo.value = info;
-};
-
-const cerrarSesion = () => {
-  obtenerVersion();
-  showToast('Cerrando sesión...', 'danger');
-};
-
-onMounted(() => {
-  getDeviceInfo();
-  obtenerVersion();
-});
-
+const copiarActividades = async () => {
+  try {
+    await presentLoading('Obteniendo actividades');
+    const actividades = await obtenerActividades(preventivoStore.nameStorage);
+    syncronized.copiarPendientes(actividades);
+    await showToast('Actividades obtenidos', 'success');
+  } catch (error) {
+    await showToast('No se pudo obtener las actividades', 'danger');
+  } finally {
+    await dismissLoading(); 
+  }
+}
+const handleRefresh = async (event: CustomEvent) => {
+    await copiarActividades();
+    event.detail.complete();
+}
+ 
 </script>
 
 <template>
   <ion-page>
-    <Header titulo="Operaciones" color="bluedark" />
-    <ion-content class="ion-padding">
-      <ion-list>
-        <ion-item-group>
-          <ion-item-divider class="Header_Item">
-            <ion-icon :icon="personSharp" slot="start"></ion-icon>
-            <div class="header_divider">
-              <ion-label class="cuenta_header" > Cuenta </ion-label>
-              <ion-item class="id_item_header">
-                <ion-icon :icon="idCardOutline" size="small" slot="start"></ion-icon>
-                <ion-label class="id_header"> 123456789 </ion-label>
-              </ion-item>
-            </div>
-          </ion-item-divider>
-
-          <ion-item>
-            <ion-label>NOMBRE: EDGAR GUTIERREZS </ion-label>
-          </ion-item>
-          <ion-item >
-            <ion-label>E-MAIL: EDGAR@KONECRANES.COM </ion-label>
-          </ion-item>
-          <ion-item  lines="none">
-            <ion-label>ESTADO: <span class="estado"> ACTIVO</span> </ion-label>
-          </ion-item>
-        </ion-item-group>
-        </ion-list>
-
-        <ion-list>
-        <ion-accordion-group :multiple="true" :value="['first', 'third']">
-          <ion-accordion value="first">
-            <ion-item class="Header_Item" slot="header" color="light">
-              <ion-label>First Accordion</ion-label>
-            </ion-item>
-            <div class="ion-padding" slot="content">First Content</div>
-          </ion-accordion>
-        </ion-accordion-group>
-        </ion-list>
-
-        <ion-list>
-        <ion-accordion-group :multiple="true" :value="['first', 'third']">
-          <ion-accordion value="first">
-            <ion-item class="Header_Item" slot="header" color="light">
-              <ion-icon :icon="settingsSharp" slot="start"></ion-icon>
-              <div class="header_divider">
-              <ion-label class="cuenta_header" > Ajustes </ion-label>
-              <ion-item class="id_item_header" lines="none">
-                <ion-label class="id_header"> Versión {{ deviceInfo.version }} </ion-label>
-              </ion-item>
-            </div>
-            </ion-item>
-            <div class="ion-padding" slot="content">First Content</div>
-          </ion-accordion>
-        </ion-accordion-group>
-        </ion-list>
-        <ion-list>
-        <ion-item class="Header_Item" button slot="header" color="light" @click="cerrarSesion" >
-          <ion-icon :icon="logOut" slot="start"></ion-icon>
-          <ion-label>Cerrar Sesión</ion-label>
-        </ion-item>
-      </ion-list>
-      <p>{{ deviceInfo }}</p>
-      <p>{{ deviceInfo2 }}</p>
+    <Header titulo="Operaciones" color="bluedark" >
+      <Sincronizar />
+    </Header>
+    <ion-content>
+      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
+            <ion-refresher-content></ion-refresher-content>
+        </ion-refresher>
+      <InformationUsuario class="InformationUsuario" />
+      <ListaPersonal />
+      <Ajustes />
+      <CerrarSesion />
     </ion-content>
   </ion-page>
 </template>
 
 
 <style scoped>
-ion-list{
-  background: #28282A;
-  border-radius: 10px;
-  margin-top: 1.2rem;
-}
-
-.Header_Item{
-  background: #222428;
-  height: 5rem;
-  /* centrar horizontalmente */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  /* centrar verticalmente */
-  /* flex-direction: column; */
-}
-
-ion-icon {
-  font-size: 48px;
-  color: #D4463C
-}
-.header_divider{
-  color: white;
-}
-.cuenta_header{
-  font-size: 1.2rem;
-  margin-left: 18px;
-  margin-bottom: -5px;
-}
-.id_header{
-  font-size: 1.2rem;
-  color: #D4463C;
-}
-.id_item_header{
-  --background: #22242800;
-}
-.estado{
-  color: #3cd455;
-  font-weight: bold;
-  font-size: 1.2rem;
-  }
+/* css */
 </style>

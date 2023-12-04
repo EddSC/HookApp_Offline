@@ -15,6 +15,7 @@ import {
     IonInfiniteScrollContent,
     IonRefresher,
     IonRefresherContent,
+    modalController,
 } from '@ionic/vue';
 import { caretForwardOutline, speedometerOutline } from 'ionicons/icons';
 import HeaderBack from '@/common/HeaderBack.vue';
@@ -27,9 +28,10 @@ import { showToast } from '@/helpers/showToast';
 import { getTituloPreventivo } from '@/services/__mocks__/preventivo/tituloList';
 import { usePreventivoStore } from '@/stores/mPreventivoStore';
 import { useStorage } from '@/services/__mocks__/sqlite/storage';
+import OpenTake from '@/modules/Preventivo/InformacionPreviaTarea/OpenTake.vue';
+import PruebasOperacionales from './InformacionPreviaTarea/PruebasPreOperacionales.vue';
 
-
-const { insertarElemento, obtenerElemento } = useStorage();
+const { insertarDatos, obtenerElemento } = useStorage();
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -39,6 +41,7 @@ const preventivoStore = usePreventivoStore();
 const id = Number(route.params.id);
 const preventivoTitulo = ref([] as Task[]);
 const mTitulos = ref([] as Task[]);
+const take5 = ref([] as any);
 
 
 const getItem = (orden: number, titulo: string) => {
@@ -76,8 +79,6 @@ const getTitulo = async () => {
         return res;
     } catch (error) {
         await showToast('Ocurrió un error al obtener Titulos', 'danger');
-    } finally {
-        console.log('Finalizado');
     }
 }
 
@@ -97,7 +98,7 @@ const syncTask = async () => {
 
         // Actualizar datos que han cambiado
         if (JSON.stringify(apiData) !== JSON.stringify(dbData)) {
-            await insertarElemento('pTitulo', String(id), apiData);
+            await insertarDatos('pTitulo', String(id), apiData);
         }
 
         const datos = await obtenerElemento('pTitulo', String(id));
@@ -129,8 +130,12 @@ const syncTaskDetails = async (data: any[]) => {
 
             // Actualizar datos que han cambiado
             if (JSON.stringify(apiData) !== JSON.stringify(dbData)) {
-                await insertarElemento('pItem', `${String(id)}${String(tarea.orden)}${String(authStore.authId)}`, apiDataItem);
+                await insertarDatos('pItem', `${String(id)}${String(tarea.orden)}${String(authStore.authId)}`, apiDataItem);
             }
+        }
+        const resTake5 = take5.value.find((e: any) => e === String(id))
+        if(resTake5 === undefined) {
+            openTake5()
         }
     } catch (error) {
         console.error('Error al sincronizar:', error);
@@ -159,8 +164,34 @@ const handleRefresh = async (event: CustomEvent) => {
     event.detail.complete();
 }
 
+const openTake5 = async () => {
+    const modal = await modalController.create({
+        component: OpenTake
+    });
+    //recuperar datos del modal
+    modal.onDidDismiss().then((data) => {
+        if (data.role === 'cerrar') {
+            openPruebasOperacionales()
+        }
+    });
+    return modal.present();
+}
+
+const openPruebasOperacionales = async () => {
+    const modal = await modalController.create({
+        component: PruebasOperacionales
+    });
+    return modal.present();
+}
+
+
 onMounted(() => {
     syncTask()
+    obtenerElemento('Open', 'Takes').then((res: any) => {
+        take5.value = res
+    }).catch((err: any) => {
+        console.log(err)
+    })
 });
 
 </script>

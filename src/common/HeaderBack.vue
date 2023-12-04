@@ -1,19 +1,21 @@
 <template>
     <ion-header>
         <ion-toolbar :color="color">
-            <ion-button fill="clear" @click="$router.back()" aria-label="back" slot="start">
+            <ion-button fill="clear" @click="router.back()" aria-label="back" slot="start">
                 <ion-icon aria-hidden="true" :icon="arrowBack" size="large" color="white" />
             </ion-button>
             <ion-title>{{ titulo }}</ion-title>
-            <ion-label slot="end"> Mant. {{ id }}</ion-label>
+            <ion-label v-if="id !== 0" slot="end"> Mant. {{ id }}</ion-label>
         </ion-toolbar>
         <slot></slot>
     </ion-header>
 </template>
 
 <script setup lang="ts">
-import { IonButton, IonIcon, IonHeader, IonToolbar, IonTitle, IonLabel } from '@ionic/vue';
+import { useIonRouter, IonButton, IonIcon, IonHeader, IonToolbar, IonTitle, IonLabel } from '@ionic/vue';
 import { arrowBack } from 'ionicons/icons';
+const router = useIonRouter();
+
 
 defineProps({
     titulo: {

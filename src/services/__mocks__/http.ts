@@ -24,7 +24,7 @@ const makeRequest = async (method: string, endpoint: string, data?: any) => {
         };
         const res: HttpResponse = await CapacitorHttp.request(options);
         if (res.status === 200) {
-            await showToast('La sincronización se realizó con éxito', 'success');
+            await showToast('La solicitud se realizó con éxito', 'success');
             return res.data;
         } else {
             await showToast('La solicitud no tuvo éxito', 'danger');

@@ -13,7 +13,7 @@
           <ion-label>Correctivo</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="tab3" href="/tabs/tab3">
+        <ion-tab-button tab="tab3" href="/tabs/tab3" disabled>
           <ion-icon aria-hidden="true" :icon="construct" />
           <ion-label>Solución</ion-label>
         </ion-tab-button>

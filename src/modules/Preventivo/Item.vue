@@ -32,7 +32,7 @@ import AlertMensage from '@/common/AlertMensage.vue';
 import { genUniqueId } from '@/helpers/uniqueId';
 
 
-const { obtenerElemento, insertarElemento } = useStorage();
+const { obtenerElemento, insertarElemento, insertarDatos } = useStorage();
 const route = useRoute();
 const preventivoStore = usePreventivoStore();
 
@@ -54,7 +54,6 @@ const getItems = async () => {
         preventivoStore.resetItems();
         const res:TaskDetail[] = await obtenerElemento('pItem', `${String(id)}${String(orden)}${String(authStore.authId)}`);
         if (res) {
-            console.log(res);
             preventivoStore.setItems(res);
             preventivoStore.generateItems()
             return
@@ -89,12 +88,6 @@ const openModalForm = async (taskDetail: TaskDetail) => {
         }
     });
     //traes datos del modal
-    modal.onDidDismiss().then((data) => {
-        if (data.data === 'ok') {
-            getItems();
-        }
-    });
-
     return modal.present();
 }
 
@@ -115,13 +108,15 @@ const regPrioridadCondicion = (IdTitulo: number, id_item: number, num_ord: numbe
     setPrioridadCondicion.value.idTitulo = IdTitulo;
     setPrioridadCondicion.value.idOrden = num_ord;
     setPrioridadCondicion.value.idItem = id_item;
+    setPrioridadCondicion.value.tipo = 'prioridad Condicion';
     setPrioridadCondicion.value.fechaHora = new Date().toLocaleString();
+    setPrioridadCondicion.value.status = 'pending';
     setPrioridadCondicion.value.prioridadCondicion = prioridadCondicion.value;
 }
 
 const cambiarPrioridadCondicion = async (id_item: number) => {
     const res = preventivoStore.procesarEstadoItem(id_item);
-    await insertarElemento('pItem', `${String(id)}${String(orden)}${String(authStore.authId)}`, res);
+    await insertarDatos('pItem', `${String(id)}${String(orden)}${String(authStore.authId)}`, res);
 }
 
 
@@ -138,7 +133,9 @@ const regNoAplica = (IdTitulo: number, id_item: number, num_ord: number) => {
     setPrioridadCondicion.value.idTitulo = IdTitulo;
     setPrioridadCondicion.value.idOrden = num_ord;
     setPrioridadCondicion.value.idItem = id_item;
+    setPrioridadCondicion.value.tipo = 'no aplica';
     setPrioridadCondicion.value.fechaHora = new Date().toLocaleString();
+    setPrioridadCondicion.value.status = 'pending';
     setPrioridadCondicion.value.noAplica = noAplica.value;
 }
 
@@ -165,7 +162,6 @@ const submitAccion = async (
         await insertarElemento(preventivoStore.nameStorage, setPrioridadCondicion.value.id, setPrioridadCondicion.value);
         await cambiarPrioridadCondicion(id_item);
         await showToast('Prioridad y condición registrada correctamente', 'success');
-        console.log(setPrioridadCondicion.value);
     } catch (error) {
         const errorMessage = accion === 'prioridadCondicion' ?
             'Ocurrió un error al registrar la prioridad y condición' :
@@ -202,7 +198,7 @@ onMounted(() => {
 
                 <ion-item @click="openModalForm(item)" :class="[item.estado === 'processed' ? 'param_si' : 'param_no']"
                     button :detail="true" :detailIcon="caretForwardOutline">
-                    <ion-note slot="start"><b>{{ item.num_ord }} |</b></ion-note>
+                    <ion-note class="itemOrd" slot="start"><b>{{ item.num_ord }} |</b></ion-note>
                     <ion-label class="ion-text-wrap custom-label">{{ item.Item }}</ion-label>
                 </ion-item>
 
@@ -223,9 +219,9 @@ onMounted(() => {
         <ion-list v-if="selectedSegment === 'COMPLETADO'">
             <ion-item-sliding v-for="item in preventivoStore.itemCompletado" :key="item.id_item">
 
-                <ion-item @click="openModalForm(item)" :class="[item.Condicion === 'nocolor' ? 'param_no' : 'param_si']"
+                <ion-item @click="openModalForm(item)" class="param_no"
                     button :detail="true" :detailIcon="caretForwardOutline">
-                    <ion-note slot="start"><b>{{ item.num_ord }} |</b></ion-note>
+                    <ion-note class="itemOrd" slot="start"><b>{{ item.num_ord }} |</b></ion-note>
                     <ion-label class="ion-text-wrap custom-label">{{ item.Item }}</ion-label>
                 </ion-item>
 
@@ -276,7 +272,7 @@ ion-note {
 }
 
 .param_si {
-    --background: #8a8a8a;
-    --color: black;
+    --background: #3D3D45;
+    --color: rgb(255, 255, 255);
 }
 </style>

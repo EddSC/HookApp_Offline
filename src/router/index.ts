@@ -51,8 +51,57 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: 'tab1/informe/:id',
+        component: () => import('@/views/Preventivo/InformeActual.vue'),
+        meta: {
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'tab1/informe-pendiente/:id/:serie',
+        component: () => import('@/views/Preventivo/InformeAnterior.vue'),
+        meta: {
+          requiresAuth: true
+        }
+      },
+      {
         path: 'tab2',
         component: () => import('@/views/TabPage/Correctivo.vue'),
+        meta: {
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'tab2/:id',
+        component: () => import('@/views/Preventivo/Titulos.vue'),
+        meta: {
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'tab2/:id/:idOden',
+        component: () => import('@/views/Preventivo/Items.vue'),
+        meta: {
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'tab2/actividad-realizado/:id/:user',
+        component: () => import('@/views/Correctivo/ActividadRealizado.vue'),
+        meta: {
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'tab2/informe/:id',
+        component: () => import('@/views/Correctivo/InformeActual.vue'),
+        meta: {
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'tab2/informe-pendiente/:id/:serie',
+        component: () => import('@/views/Correctivo/RegCumplimiento.vue'),
         meta: {
           requiresAuth: true
         }
@@ -67,6 +116,13 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'tab4',
         component: () => import('@/views/TabPage/Operaciones.vue'),
+        meta: {
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'tab4/historial',
+        component: () => import('@/views/Operaciones/HistorialActividades.vue'),
         meta: {
           requiresAuth: true
         }

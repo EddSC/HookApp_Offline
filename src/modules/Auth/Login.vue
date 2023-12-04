@@ -23,6 +23,7 @@ import {
 import { ref } from 'vue';
 import { LoginInterface } from '@/interfaces/loginInterface';
 import { useAuthStore } from '@/stores/authStore';
+import { presentLoading, dismissLoading } from '@/helpers/loading';
 
 // Variables
 const eyePassword = ref(false)
@@ -35,9 +36,16 @@ const eyebtn = () => {
     eyePassword.value = !eyePassword.value;
 }
 const signIn = async () => {
+    try {
+        await presentLoading('Iniciando sesión...');
     const res = await authStore.signIn(dataLogin.value)
     if (res) {
         ionRouter.navigate('/', 'forward', 'replace');
+    }
+    } catch (error) {
+        alert(error);
+    }finally{
+        await dismissLoading();
     }
 }
 

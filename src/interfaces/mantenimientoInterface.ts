@@ -10,6 +10,7 @@ export interface Upkeep {
     idMantenimiento: string
     idtuser: number
     numreporte: string
+    serie?: string
 };
 
 export interface Task {
@@ -144,26 +145,26 @@ export interface Image {
     tag: string
     capLe: string
     area: string
-    portal: number
-    semiportal: number
-    monoviga: number
-    biviga: number
-    carroi: number
-    carroii: number
-    monorielaux: number
-    monorriel: number
-    jib: number
-    pedestal: number
+    portal: boolean | number
+    semiportal: boolean | number
+    monoviga: boolean | number
+    biviga: boolean | number
+    carroi: boolean | number
+    carroii: boolean | number
+    monorielaux: boolean | number
+    monorriel: boolean | number
+    jib: boolean | number
+    pedestal: boolean | number
     capi: string
     capii: string
     capiii: string
     capiv: string
     capv: string
-    alti: number
-    altii: number
-    altiii: number
-    altiv: number
-    altv: number
+    alti: number | string
+    altii: number | string
+    altiii: number | string
+    altiv: number | string
+    altv: number | string
     recorrido: string
     luzpuente: string
   }
@@ -274,7 +275,7 @@ export interface Image {
   export interface Email {
     asunto: string
     destinatario: string
-    message: string
+    varMessage: string
   }
   
   export interface CorrectivoDesc {
