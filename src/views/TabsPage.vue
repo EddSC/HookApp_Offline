@@ -27,6 +27,15 @@
 </template>
 
 <script setup lang="ts">
-import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
+import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet, useBackButton, useIonRouter } from '@ionic/vue';
 import { home, build, construct, cog } from 'ionicons/icons';
+import { App } from '@capacitor/app';
+
+const ionRouter = useIonRouter();
+
+useBackButton(-1, () => {
+    if (!ionRouter.canGoBack()) {
+        App.exitApp();
+    }
+});
 </script>
