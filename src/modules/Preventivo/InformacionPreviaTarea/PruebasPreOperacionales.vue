@@ -195,7 +195,7 @@ const regPruebasOperacionales = async () => {
             </ion-toggle>
             <div v-if="pruebas.estado === false">
                 <ion-label position="stacked"> Caracteres Max | </ion-label>
-                <ion-textarea :counter="true" label="Descripción" :maxlength="225" autocapitalize="on" inputmode="text" mode="ios" :rows="5" :cols="50"
+                <ion-textarea label-placement="floating" :counter="true" label="Descripción" :maxlength="225" autocapitalize="on" inputmode="text" mode="ios" :rows="5" :cols="100"
                     placeholder="Escriba porque razon no aplica" v-model.trim="pruebas.comentario">
                 </ion-textarea>
             </div>

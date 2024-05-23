@@ -115,7 +115,7 @@ const regFormTrabajoRealizado = () => {
 const registrarFoto = async () => {
     for (const photo of photos.value) {
         const base64 = await base64Convert(photo.filepath, photo.webviewPath);
-        regFormImage(photo.filepath, String(base64));
+        regFormImage(photo.fileName, String(base64));
         await insertarElemento(preventivoStore.nameStorage, setTaskDetail.value.id, setTaskDetail.value);
         setTaskDetail.value = {} as TaskDetails;
         image.value = {} as Image;

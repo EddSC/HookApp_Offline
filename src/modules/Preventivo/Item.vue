@@ -149,9 +149,9 @@ const submitAccion = async (
     try {
         await presentLoading('Registrando...');
         const verificar = preventivoStore.preventivoItems.find(item => item.id_item === id_item);
-        if (verificar?.estado === 'processed') {
-            return showToast('Este item ya fue procesado', 'danger');
-        }
+        // if (verificar?.estado === 'processed') {
+        //     return showToast('Este item ya fue procesado', 'danger');
+        // }
 
         if (accion === 'prioridadCondicion') {
             regPrioridadCondicion(IdTitulo, id_item, num_ord);

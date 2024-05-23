@@ -6,7 +6,7 @@ import {
     IonButton,
     IonProgressBar,
 } from '@ionic/vue';
-import { notificationsSharp, syncCircle, trash, wifi } from 'ionicons/icons';
+import { notificationsSharp, syncCircle, trash } from 'ionicons/icons';
 import { showToast } from '@/helpers/showToast';
 import { syncronizeTasks } from '@/services/__mocks__/sendTasksToAPI';
 import { useSynchronize } from '@/stores/synchronize';
@@ -66,9 +66,6 @@ const eliminarTareas = async () => {
             <ion-button @click="eliminarTareas">
                 <ion-icon :class="synStore.pendientesProcesados ? 'trash' : ''" :icon="trash"></ion-icon>
                 <ion-badge v-if="synStore.pendientesProcesados"> {{ synStore.pendientesProcesados }} </ion-badge>
-            </ion-button>
-            <ion-button disabled>
-                <ion-icon :icon="wifi"></ion-icon>
             </ion-button>
             <ion-button :class="progress ? 'notification' : ''" slot="end" @click="procesarTasks">
                 <ion-icon :icon="syncCircle"></ion-icon>

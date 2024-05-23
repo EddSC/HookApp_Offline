@@ -157,6 +157,7 @@ const regFormNota = () => {
     nota.value.idRecomen = Number(shortId);
     nota.value.idComentarios = Number(shortId);
     nota.value.item = props.taskDetail.id_item;
+    nota.value.varNota = 1;
     nota.value.varFoto = photos.value.length > 0 ? 1 : 0;
     nota.value.varMant = props.taskDetail.IdMantenimiento;
     nota.value.tecnico = Number(authStore.authId);
@@ -287,7 +288,7 @@ const procesarEstado = async (id_item: number) => {
 const registrarFoto = async () => {
     for (const photo of photos.value) {
         const base64 = await base64Convert(photo.filepath, photo.webviewPath);
-        regFormImage(photo.filepath, String(base64));
+        regFormImage(photo.fileName, String(base64));
         await insertarElemento(preventivoStore.nameStorage, setTaskDetail.value.id, setTaskDetail.value);
         setTaskDetail.value = {} as TaskDetails;
         image.value = {} as Image;
@@ -341,7 +342,7 @@ const submitFrmCotizacion = async () => {
         if (photos.value.length === 0) return showToast('Foto es requerido', 'danger');
         regCotizacion();
         await insertarElemento(preventivoStore.nameStorage, setTaskDetail.value.id, setTaskDetail.value);
-        const nombresImagenes = photos.value.map(photo => photo.filepath);
+        const nombresImagenes = photos.value.map(photo => photo.fileName);
         const tipoCotizacion = selectCotizacion.find((i) => i.value === cotizacion.value.TipoCotizacion);
         setTaskDetail.value = {} as TaskDetails;
         

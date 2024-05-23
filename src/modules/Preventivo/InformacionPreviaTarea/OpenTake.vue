@@ -94,7 +94,7 @@ const regFormImage = async () => {
     const photo = photos.value[0];
     if (!photo) return;
     const base64 = await base64Convert(photo.filepath, photo.webviewPath);
-    image.value.nombre = photos.value[0].filepath;
+    image.value.nombre = photo.fileName;
     image.value.imagen = String(base64);
     image.value.mantenimiento = Number(route.params.id);
     image.value.tecnico = Number(authStore.authId);

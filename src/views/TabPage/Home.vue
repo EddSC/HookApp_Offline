@@ -20,6 +20,7 @@ const copiarActividades = async () => {
     const actividades = await obtenerActividades(preventivoStore.nameStorage);
     syncronized.copiarPendientes(actividades);
 }
+
 onMounted(() => {
     copiarActividades()
 });

@@ -11,6 +11,7 @@ import { isPlatform } from '@ionic/vue';
 import { Storage, Drivers } from '@ionic/storage';
 
 export interface UserPhoto {
+    fileName: string;
     filepath: string;
     webviewPath?: string;
 }
@@ -106,6 +107,7 @@ export const usePhotoGallery = () => {
         // Display the new image by rewriting the 'file://' path to HTTP
         // Details: https://ionicframework.com/docs/building/webview#file-protocol
         return {
+          fileName: fileName,
           filepath: savedFile.uri,
           webviewPath: Capacitor.convertFileSrc(savedFile.uri),
         };
@@ -113,6 +115,7 @@ export const usePhotoGallery = () => {
         // Use webPath to display the new image instead of base64 since it's
         // already loaded into memory
         return {
+          fileName: fileName,
           filepath: fileName,
           webviewPath: photo.webPath,
         };

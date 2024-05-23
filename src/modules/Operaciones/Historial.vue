@@ -63,7 +63,7 @@ const deleteTask = async (id: string) => {
                     <ion-row>
                         <ion-col size="12" size-sm="4" size-md="3">
                             <ion-label color="primary">
-                                <h4>Mantenimiento: {{ task.idMantenimiento }}</h4>
+                                <h4>N°: {{ task.idMantenimiento }}</h4>
                             </ion-label>
                         </ion-col>
                         <ion-col size="12" size-sm="4" size-md="3">
